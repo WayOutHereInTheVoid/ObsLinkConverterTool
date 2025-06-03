@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsidian Link Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .tool-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e8ecef;
+        }
+
+        .tool-title {
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .tool-title::before {
+            content: "🔗";
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .tool-section:nth-child(3) .tool-title::before {
+            content: "📝";
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e8ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        .output-section {
+            background: #f8f9fa;
+            border: 2px solid #e8ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .output-section label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        .output-text {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 14px;
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        .copy-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #219a52;
+            transform: translateY(-1px);
+        }
+
+        .copy-btn.copied {
+            background: #2ecc71;
+        }
+
+        .example {
+            background: #e8f5e8;
+            border-left: 4px solid #27ae60;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .example-title {
+            font-weight: 600;
+            color: #27ae60;
+            margin-bottom: 8px;
+        }
+
+        .example code {
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Obsidian Link Converter</h1>
+            <p>Convert external links and headers to Obsidian's internal link format</p>
+        </div>
+
+        <!-- External to Internal Link Converter -->
+        <div class="tool-section">
+            <h2 class="tool-title">External to Internal Link Converter</h2>
+            
+            <div class="example">
+                <div class="example-title">Example:</div>
+                Input: <code>[**drive the Road to Hana**](https://thehawaiivacationguide.com/routes-for-road-to-hana/)</code><br>
+                Page Name: <code>5 Routes for the Road to Hana</code><br>
+                Output: <code>**[[5 Routes for the Road to Hana|drive the Road to Hana]]**</code>
+            </div>
+
+            <div class="input-group">
+                <label for="external-link">Markdown Link Text:</label>
+                <textarea id="external-link" placeholder="[**drive the Road to Hana**](https://thehawaiivacationguide.com/routes-for-road-to-hana/)"></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="page-name">Page Name to Link:</label>
+                <input type="text" id="page-name" placeholder="5 Routes for the Road to Hana">
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="convertExternalLink()">Convert Link</button>
+                <button class="btn btn-secondary" onclick="clearExternalForm()">Clear</button>
+            </div>
+
+            <div class="output-section">
+                <label for="external-output">Obsidian Internal Link:</label>
+                <textarea id="external-output" class="output-text" readonly></textarea>
+                <button class="copy-btn" onclick="copyToClipboard('external-output', this)">Copy</button>
+            </div>
+        </div>
+
+        <!-- Header Link Converter -->
+        <div class="tool-section">
+            <h2 class="tool-title">Internal Header Link Converter</h2>
+            
+            <div class="example">
+                <div class="example-title">Example:</div>
+                Header: <code>What's the Best Time of Year to Visit Maui?</code><br>
+                Display Text: <code>best time to visit Maui</code><br>
+                Output: <code>**[[#What's the Best Time of Year to Visit Maui?|best time to visit Maui]]**</code>
+            </div>
+
+            <div class="input-group">
+                <label for="header-name">Header Name:</label>
+                <input type="text" id="header-name" placeholder="What's the Best Time of Year to Visit Maui?">
+            </div>
+
+            <div class="input-group">
+                <label for="display-text">Display Text (optional - defaults to header name):</label>
+                <input type="text" id="display-text" placeholder="best time to visit Maui">
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="convertHeaderLink()">Convert Header</button>
+                <button class="btn btn-secondary" onclick="clearHeaderForm()">Clear</button>
+            </div>
+
+            <div class="output-section">
+                <label for="header-output">Obsidian Header Link:</label>
+                <textarea id="header-output" class="output-text" readonly></textarea>
+                <button class="copy-btn" onclick="copyToClipboard('header-output', this)">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function extractLinkText(markdownLink) {
+            // Handle various markdown link formats
+            const patterns = [
+                /\[([^\]]+)\]\([^)]+\)/g,  // Standard [text](url)
+                /\[\*\*([^*]+)\*\*\]\([^)]+\)/g,  // [**text**](url)
+                /\[([^*]+)\*\*([^*]+)\*\*([^]]*)\]\([^)]+\)/g,  // [text**bold**text](url)
+            ];
+            
+            for (let pattern of patterns) {
+                const match = markdownLink.match(pattern);
+                if (match) {
+                    // Extract the text between the brackets, removing any markdown formatting
+                    let text = match[0].substring(1, match[0].indexOf(']('));
+                    // Remove markdown formatting like ** for bold
+                    text = text.replace(/\*\*/g, '');
+                    return text.trim();
+                }
+            }
+            
+            // If no pattern matches, return the original input
+            return markdownLink.trim();
+        }
+
+        function convertExternalLink() {
+            const linkInput = document.getElementById('external-link').value.trim();
+            const pageNameInput = document.getElementById('page-name').value.trim();
+            
+            if (!linkInput || !pageNameInput) {
+                alert('Please fill in both the markdown link and page name fields.');
+                return;
+            }
+            
+            const displayText = extractLinkText(linkInput);
+            const result = `**[[${pageNameInput}|${displayText}]]**`;
+            
+            document.getElementById('external-output').value = result;
+        }
+
+        function convertHeaderLink() {
+            const headerName = document.getElementById('header-name').value.trim();
+            const displayText = document.getElementById('display-text').value.trim();
+            
+            if (!headerName) {
+                alert('Please enter a header name.');
+                return;
+            }
+            
+            const finalDisplayText = displayText || headerName;
+            const result = `**[[#${headerName}|${finalDisplayText}]]**`;
+            
+            document.getElementById('header-output').value = result;
+        }
+
+        function clearExternalForm() {
+            document.getElementById('external-link').value = '';
+            document.getElementById('page-name').value = '';
+            document.getElementById('external-output').value = '';
+        }
+
+        function clearHeaderForm() {
+            document.getElementById('header-name').value = '';
+            document.getElementById('display-text').value = '';
+            document.getElementById('header-output').value = '';
+        }
+
+        async function copyToClipboard(elementId, buttonElement) {
+            const textArea = document.getElementById(elementId);
+            const text = textArea.value;
+            
+            if (!text) {
+                alert('Nothing to copy!');
+                return;
+            }
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                buttonElement.textContent = 'Copied!';
+                buttonElement.classList.add('copied');
+                
+                setTimeout(() => {
+                    buttonElement.textContent = 'Copy';
+                    buttonElement.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                // Fallback for browsers that don't support clipboard API
+                textArea.select();
+                document.execCommand('copy');
+                buttonElement.textContent = 'Copied!';
+                
+                setTimeout(() => {
+                    buttonElement.textContent = 'Copy';
+                }, 2000);
+            }
+        }
+
+        // Add Enter key support for inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('external-link').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    convertExternalLink();
+                }
+            });
+            
+            document.getElementById('page-name').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    convertExternalLink();
+                }
+            });
+            
+            document.getElementById('header-name').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    convertHeaderLink();
+                }
+            });
+            
+            document.getElementById('display-text').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    convertHeaderLink();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
